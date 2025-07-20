@@ -19,7 +19,8 @@ async function apiFetch(endpoint, method = "POST", body = null) {
 
   if (!response.ok) {
     // Throw error with backend message if available
-    const errorMessage = json.message || `HTTP error! Status: ${response.status}`;
+    const errorMessage =
+      json.message || `HTTP error! Status: ${response.status}`;
     const error = new Error(errorMessage);
     error.status = response.status;
     error.response = json;
@@ -82,4 +83,3 @@ export const resetPassword = (email, code, password) =>
 export const getDashboardStats = () => apiFetch("dashboard/stats.php", "POST");
 
 export { apiFetch };
-

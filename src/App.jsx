@@ -66,7 +66,8 @@ const AppContent = () => {
 
   const renderComponent = () => {
     if (authLoading) return <Loading />;
-    if (showForgotPassword) return <ForgotPassword onBackToLogin={handleBackToLogin} />;
+    if (showForgotPassword)
+      return <ForgotPassword onBackToLogin={handleBackToLogin} />;
 
     const isLoggedIn = !!user;
 
@@ -83,7 +84,12 @@ const AppContent = () => {
 
     switch (activeComponent) {
       case "home":
-        return <Home setActiveComponent={setActiveComponent} isLoggedIn={isLoggedIn} />;
+        return (
+          <Home
+            setActiveComponent={setActiveComponent}
+            isLoggedIn={isLoggedIn}
+          />
+        );
       case "products":
         return protectedComponent(Products);
       case "stock":
@@ -93,7 +99,9 @@ const AppContent = () => {
       case "dashboard":
         return protectedComponent(Dashboard);
       case "profile":
-        return protectedComponent(() => <Profile setActiveComponent={setActiveComponent} />);
+        return protectedComponent(() => (
+          <Profile setActiveComponent={setActiveComponent} />
+        ));
       case "about":
         return <About />;
       case "contact":
@@ -120,7 +128,12 @@ const AppContent = () => {
           />
         );
       default:
-        return <Home setActiveComponent={setActiveComponent} isLoggedIn={isLoggedIn} />;
+        return (
+          <Home
+            setActiveComponent={setActiveComponent}
+            isLoggedIn={isLoggedIn}
+          />
+        );
     }
   };
 
@@ -190,4 +203,3 @@ function App() {
 }
 
 export default App;
-

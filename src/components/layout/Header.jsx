@@ -173,4 +173,3 @@ const Header = ({ setActiveComponent, activeComponent }) => {
 };
 
 export default Header;
-

@@ -427,7 +427,9 @@ const Products = () => {
         {loading ? (
           <div className="text-center text-gray-600">Loading products...</div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center text-gray-500">No products available.</div>
+          <div className="text-center text-gray-500">
+            No products available.
+          </div>
         ) : (
           <table className="w-full border border-orange-300 rounded-lg">
             <thead className="bg-orange-100">
@@ -496,4 +498,3 @@ const Products = () => {
 };
 
 export default Products;
-

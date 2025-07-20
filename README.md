@@ -20,18 +20,20 @@ InventoryPro is a powerful web application to manage products, sales, and stock,
 - Database: MySQL (XAMPP)
 
 ## 📸 Screenshots
-![Interface(not Login)](./public/screenshots/Interface.png)
 
-![Interface(Login)](./public/screenshots/Interface_Login.png)
+![Interface(not Login)](./public/screenshots/1.png)
 
-![Dashboard](./public/screenshots/Dashboard.png)
+![Interface(Login)](./public/screenshots/2.png)
 
-![Login](./public/screenshots/Login.png)
+![Dashboard](./public/screenshots/4.png)
 
-![Profile](./public/screenshots/Profile.png)
+![Login](./public/screenshots/3.png)
 
-## 🎥 Video 
-[Watch the full video](/public/video/Enregistrement%202025-07-20%20115713.mp4)
+![Profile](./public/screenshots/5.png)
+
+## 🎥 Video
+
+Watch it on [LinkedIn](https://www.linkedin.com/posts/yassine-badri-0279a7342_programmer-html-css-activity-7352808883263782912-EK5y?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFXupV8BfR6_0oHTxDzZl4jvel4cyzxbmOw)
 
 ## 📦 Getting Started
 
@@ -45,7 +47,7 @@ cd InventoryPro
 ### 2. Install Dependencies
 
 ```bash
-npm install vite  
+npm install vite
 ```
 
 ### 3. Start the Development Server
@@ -65,6 +67,7 @@ See [LICENSE](/LICENSE)
 Made by [**ERROR**](https://github.com/BD-YASSINE)
 
 ## 📞 Contact
+
 linkedin: [My LinkedIn](https://www.linkedin.com/in/yassine-badri-0279a7342/)
 
 ---

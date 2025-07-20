@@ -128,5 +128,3 @@ const Login = ({ onLogin, onForgot, onSignup }) => {
 };
 
 export default Login;
-
-
