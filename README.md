@@ -1,4 +1,4 @@
-# InventoryPro Frontend
+# 📈 InventoryPro Frontend
 
 InventoryPro is a powerful web application to manage products, sales, and stock, with a visual dashboard for tracking activity.
 
