@@ -2,6 +2,10 @@
 
 InventoryPro is a powerful web application to manage products, sales, and stock, with a visual dashboard for tracking activity.
 
+## ❗ Important
+
+I had previously pushed this project, but due to some issues, I had to delete it and push it again.
+
 ## 🚀 Features
 
 - Product Management
