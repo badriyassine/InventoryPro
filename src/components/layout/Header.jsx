@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { BiHome, BiPhone, BiInfoCircle, BiMap, BiBell } from "react-icons/bi";
 import { User as LucideUser } from "lucide-react";
+import { apiFetch } from "../../api/api"; // Adjust path if needed
 
 const Header = ({ setActiveComponent, activeComponent }) => {
   const [user, setUser] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [error, setError] = useState(null);
 
   const notificationsRef = useRef(null);
 
@@ -15,21 +18,24 @@ const Header = ({ setActiveComponent, activeComponent }) => {
   }, [activeComponent]);
 
   useEffect(() => {
-    if (user?.role === "admin") {
-      setNotifications([
-        { message: "Product data updated", date: "2025-07-20 09:20" },
-        { message: "New user registered", date: "2025-07-20 10:00" },
-      ]);
-    } else if (user?.role === "user") {
-      setNotifications([
-        { message: "Stock levels updated", date: "2025-07-20 08:30" },
-      ]);
-    } else {
-      setNotifications([]);
+    if (user && showNotifications) {
+      fetchNotifications();
     }
-  }, [user]);
+  }, [user, showNotifications]);
 
-  // Close notifications dropdown when clicking outside
+  const fetchNotifications = async () => {
+    setLoadingNotifications(true);
+    setError(null);
+    try {
+      const data = await apiFetch("notifications/get.php", "POST");
+      setNotifications(data);
+    } catch (err) {
+      setError("Failed to load notifications.");
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -52,6 +58,13 @@ const Header = ({ setActiveComponent, activeComponent }) => {
   }, [showNotifications]);
 
   const clearNotifications = () => setNotifications([]);
+
+  const handleNotificationClick = (targetComponent) => {
+    if (targetComponent) {
+      setActiveComponent(targetComponent);
+      setShowNotifications(false);
+    }
+  };
 
   return (
     <div className="relative z-50">
@@ -88,19 +101,10 @@ const Header = ({ setActiveComponent, activeComponent }) => {
           ))}
         </nav>
 
-        {/* Right Side: User Icon & Notification Icon */}
+        {/* Right Side: Notification Icon & User Icon */}
         <div className="flex items-center gap-3 relative">
           {user ? (
             <>
-              {/* User Icon */}
-              <button
-                onClick={() => setActiveComponent("profile")}
-                className="text-gray-700 hover:text-orange-500 transition"
-                aria-label="User Profile"
-              >
-                <LucideUser className="w-5 h-5" />
-              </button>
-
               {/* Notification Icon & Dropdown */}
               <div className="relative mt-2" ref={notificationsRef}>
                 <button
@@ -114,7 +118,7 @@ const Header = ({ setActiveComponent, activeComponent }) => {
                   )}
                 </button>
 
-                {showNotifications && notifications.length > 0 && (
+                {showNotifications && (
                   <div
                     className="absolute right-0 mt-3 w-80 max-h-96 overflow-y-auto bg-white backdrop-blur-md border border-orange-300 rounded-lg shadow-lg z-[9999]"
                     style={{ top: "100%" }}
@@ -122,17 +126,32 @@ const Header = ({ setActiveComponent, activeComponent }) => {
                     <div className="p-4 font-semibold text-orange-600 border-b border-orange-300">
                       Notifications
                     </div>
-                    <ul>
-                      {notifications.map(({ message, date }, index) => (
-                        <li
-                          key={index}
-                          className="px-4 py-3 border-b border-orange-200 hover:bg-orange-50 cursor-default"
-                        >
-                          <p className="text-gray-800">{message}</p>
-                          <p className="text-xs text-gray-500 mt-1">{date}</p>
-                        </li>
-                      ))}
-                    </ul>
+                    {loadingNotifications ? (
+                      <p className="p-4 text-center text-gray-600">Loading...</p>
+                    ) : error ? (
+                      <p className="p-4 text-center text-red-600">{error}</p>
+                    ) : notifications.length === 0 ? (
+                      <p className="p-4 text-center text-gray-600">
+                        No notifications
+                      </p>
+                    ) : (
+                      <ul>
+                        {notifications.map(
+                          ({ id, message, date, targetComponent }) => (
+                            <li
+                              key={id}
+                              className="px-4 py-3 border-b border-orange-200 hover:bg-orange-50 cursor-pointer"
+                              onClick={() =>
+                                handleNotificationClick(targetComponent)
+                              }
+                            >
+                              <p className="text-gray-800">{message}</p>
+                              <p className="text-xs text-gray-500 mt-1">{date}</p>
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    )}
                     <div className="p-3 flex justify-center">
                       <button
                         onClick={clearNotifications}
@@ -144,6 +163,15 @@ const Header = ({ setActiveComponent, activeComponent }) => {
                   </div>
                 )}
               </div>
+
+              {/* User Icon */}
+              <button
+                onClick={() => setActiveComponent("profile")}
+                className="text-gray-700 hover:text-orange-500 transition"
+                aria-label="User Profile"
+              >
+                <LucideUser className="w-5 h-5" />
+              </button>
             </>
           ) : (
             <>
@@ -168,3 +196,6 @@ const Header = ({ setActiveComponent, activeComponent }) => {
 };
 
 export default Header;
+
+
+

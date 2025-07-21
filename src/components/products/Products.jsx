@@ -4,6 +4,7 @@ import {
   addProduct,
   updateProduct,
   deleteProduct,
+  addNotification,
 } from "../../api/api";
 
 const validNameRegex = /^[a-zA-Z0-9 ]*$/;
@@ -49,6 +50,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         category: trimmedCategory,
       });
       if (result.success) {
+        await addNotification(`Product added: ${trimmedName}`, "product");
         onProductAdded();
         onClose();
       } else {
@@ -175,7 +177,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         category: trimmedCategory,
       });
       if (result.success) {
-        onProductUpdated();
+        await addNotification(`Product updated: ${trimmedName}`, "product");
         onClose();
       } else {
         setError(result.message || "Failed to update product");
@@ -353,6 +355,7 @@ const Products = () => {
     try {
       const res = await deleteProduct(selectedProduct.id);
       if (res.success) {
+        await addNotification(`Product deleted: ${selectedProduct.name}`, "product");
         setDeleteModalOpen(false);
         setSelectedProduct(null);
         loadProducts();

@@ -1,5 +1,9 @@
+// ==================== Profile.jsx ====================
 import React, { useEffect, useState } from "react";
-import { changeUserPassword } from "../../api/api"; // adjust import path as needed
+import {
+  changeUserPassword,
+  deleteUserAccount,
+} from "../../api/api"; // Adjust import path as needed
 import { User as LucideUser } from "lucide-react";
 
 const Profile = ({ setActiveComponent }) => {
@@ -7,7 +11,7 @@ const Profile = ({ setActiveComponent }) => {
     username: "",
     email: "",
     id: null,
-    role: "", // Added role here
+    role: "",
   });
   const [editing, setEditing] = useState(false);
   const [editedData, setEditedData] = useState({ username: "", email: "" });
@@ -21,16 +25,16 @@ const Profile = ({ setActiveComponent }) => {
   const [changePasswordMessage, setChangePasswordMessage] = useState("");
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
-  // Logout confirmation modal state
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  // Delete account confirmation modal state
+  // Delete account modal state and errors
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePasswords, setDeletePasswords] = useState({
     password: "",
     confirmPassword: "",
   });
   const [deleteError, setDeleteError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Clock state
   const [time, setTime] = useState(new Date());
@@ -45,7 +49,7 @@ const Profile = ({ setActiveComponent }) => {
         username,
         email: parsedUser.email,
         id: parsedUser.id || parsedUser.user_id || null,
-        role: parsedUser.role || "User", // default role fallback
+        role: parsedUser.role || "User",
       });
       setEditedData({ username, email: parsedUser.email });
     }
@@ -57,44 +61,64 @@ const Profile = ({ setActiveComponent }) => {
     return () => clearInterval(intervalId);
   }, []);
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour12: false });
-  };
+  const formatTime = (date) =>
+    date.toLocaleTimeString([], { hour12: false });
 
-  const formatDate = (date) => {
-    return date.toLocaleDateString(undefined, {
+  const formatDate = (date) =>
+    date.toLocaleDateString(undefined, {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  };
 
+  // Handle delete password inputs
   const handleDeletePasswordChange = (e) => {
     setDeletePasswords({ ...deletePasswords, [e.target.name]: e.target.value });
   };
 
-  const confirmDeleteAccount = () => {
+  // Confirm Delete Account - Updated with better error handling
+  const confirmDeleteAccount = async () => {
     setDeleteError("");
+    setIsDeleting(true);
+    
     const { password, confirmPassword } = deletePasswords;
 
     if (!password || !confirmPassword) {
       setDeleteError("Please fill in both password fields.");
+      setIsDeleting(false);
       return;
     }
     if (password !== confirmPassword) {
       setDeleteError("Passwords do not match.");
+      setIsDeleting(false);
       return;
     }
 
-    // You should call backend here to delete user account securely before removing locally
+    try {
+      console.log("Attempting to delete account...");
+      const result = await deleteUserAccount(password);
+      console.log("Delete result:", result);
 
-    localStorage.removeItem("user");
-    setActiveComponent("signup");
-    setShowDeleteConfirm(false);
-    setDeletePasswords({ password: "", confirmPassword: "" });
+      if (result.success) {
+        // Clear user data and redirect
+        localStorage.removeItem("user");
+        setActiveComponent("signup");
+        setShowDeleteConfirm(false);
+        setDeletePasswords({ password: "", confirmPassword: "" });
+        setDeleteError("");
+      } else {
+        setDeleteError(result.message || "Failed to delete account.");
+      }
+    } catch (err) {
+      console.error("Delete account error:", err);
+      setDeleteError(err.message || "Server error. Please check console for details.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
+  // Handle profile editing inputs
   const handleChange = (e) => {
     setEditedData({ ...editedData, [e.target.name]: e.target.value });
   };
@@ -113,10 +137,12 @@ const Profile = ({ setActiveComponent }) => {
     setEditing(false);
   };
 
+  // Change password inputs
   const handlePasswordInputChange = (e) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
+  // Change password submit
   const handleChangePassword = async () => {
     setChangePasswordMessage("");
 
@@ -161,6 +187,7 @@ const Profile = ({ setActiveComponent }) => {
     }
   };
 
+  // If not logged in, show login/signup options
   if (!localStorage.getItem("user")) {
     return (
       <div className="max-w-md mx-auto mt-32 p-8 bg-white bg-opacity-30 backdrop-blur-xl rounded-xl shadow-2xl text-gray-800 text-center">
@@ -216,7 +243,7 @@ const Profile = ({ setActiveComponent }) => {
             </div>
           </div>
 
-          {/* Clock on right side */}
+          {/* Clock */}
           <div className="text-center text-gray-800 select-none">
             <div className="text-7xl font-mono font-extrabold tracking-widest text-orange-600 drop-shadow-lg">
               {formatTime(time)}
@@ -326,8 +353,7 @@ const Profile = ({ setActiveComponent }) => {
               <button
                 onClick={() => {
                   localStorage.removeItem("user");
-                  window.location.reload(); // Reload page on logout
-                  // Optionally, also setActiveComponent("login");
+                  window.location.reload();
                   setShowLogoutConfirm(false);
                 }}
                 className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -339,7 +365,7 @@ const Profile = ({ setActiveComponent }) => {
         </div>
       )}
 
-      {/* Delete Account Modal */}
+      {/* Delete Account Modal - Updated */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
           <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
@@ -361,7 +387,8 @@ const Profile = ({ setActiveComponent }) => {
                 placeholder="Password"
                 value={deletePasswords.password}
                 onChange={handleDeletePasswordChange}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800"
+                disabled={isDeleting}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800 disabled:bg-gray-100"
               />
               <input
                 type="password"
@@ -369,12 +396,15 @@ const Profile = ({ setActiveComponent }) => {
                 placeholder="Confirm Password"
                 value={deletePasswords.confirmPassword}
                 onChange={handleDeletePasswordChange}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800"
+                disabled={isDeleting}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800 disabled:bg-gray-100"
               />
             </div>
 
             {deleteError && (
-              <p className="text-red-600 text-center mb-4 font-semibold">{deleteError}</p>
+              <p className="text-red-600 text-center mb-4 font-semibold">
+                {deleteError}
+              </p>
             )}
 
             <div className="flex justify-end space-x-4">
@@ -384,15 +414,17 @@ const Profile = ({ setActiveComponent }) => {
                   setDeletePasswords({ password: "", confirmPassword: "" });
                   setDeleteError("");
                 }}
-                className="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+                disabled={isDeleting}
+                className="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDeleteAccount}
-                className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition"
+                disabled={isDeleting}
+                className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50"
               >
-                Delete Account
+                {isDeleting ? "Deleting..." : "Delete Account"}
               </button>
             </div>
           </div>
@@ -471,6 +503,8 @@ const Profile = ({ setActiveComponent }) => {
 };
 
 export default Profile;
+
+
 
 
 

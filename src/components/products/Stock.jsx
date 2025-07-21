@@ -5,6 +5,7 @@ import {
   addStock,
   deleteStock,
   updateStock,
+  addNotification
 } from "../../api/api";
 import Loading from "../common/Loading";
 import { useAuth } from "../../context/AuthContext";
@@ -51,6 +52,7 @@ const AddStockModal = ({ isOpen, onClose, onStockAdded, userId }) => {
     try {
       const result = await addStock(productId, quantity, userId, notes);
       if (result.success) {
+        await addNotification("Stock added successfully", "stock");
         onStockAdded();
         onClose();
       } else {

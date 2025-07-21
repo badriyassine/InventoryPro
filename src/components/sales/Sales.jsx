@@ -5,6 +5,7 @@ import {
   getSales,
   addSale,
   deleteSale,
+  addNotification,
 } from "../../api/api";
 import Loading from "../common/Loading";
 
@@ -72,6 +73,7 @@ const AddSaleModal = ({ isOpen, onClose, onSaleAdded, userId }) => {
       // Fixed argument order here: userId before notes
       const result = await addSale(productId, quantity, price, userId, notes);
       if (result.success) {
+        await addNotification("Sale added successfully", "sale");
         onSaleAdded();
         onClose();
       } else {
