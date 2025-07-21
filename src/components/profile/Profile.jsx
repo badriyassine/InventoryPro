@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { changeUserPassword } from "../../api/api"; // adjust import path as needed
+import { User as LucideUser } from "lucide-react";
 
 const Profile = ({ setActiveComponent }) => {
   const [userData, setUserData] = useState({
     username: "",
     email: "",
     id: null,
-    role: "",  // Added role here
+    role: "", // Added role here
   });
   const [editing, setEditing] = useState(false);
   const [editedData, setEditedData] = useState({ username: "", email: "" });
@@ -22,11 +23,6 @@ const Profile = ({ setActiveComponent }) => {
 
   // Logout confirmation modal state
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [logoutPasswords, setLogoutPasswords] = useState({
-    password: "",
-    confirmPassword: "",
-  });
-  const [logoutError, setLogoutError] = useState("");
 
   // Delete account confirmation modal state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -51,30 +47,8 @@ const Profile = ({ setActiveComponent }) => {
     }
   }, []);
 
-  const handleLogoutPasswordChange = (e) => {
-    setLogoutPasswords({ ...logoutPasswords, [e.target.name]: e.target.value });
-  };
   const handleDeletePasswordChange = (e) => {
     setDeletePasswords({ ...deletePasswords, [e.target.name]: e.target.value });
-  };
-
-  const confirmLogout = () => {
-    setLogoutError("");
-    const { password, confirmPassword } = logoutPasswords;
-
-    if (!password || !confirmPassword) {
-      setLogoutError("Please fill in both password fields.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setLogoutError("Passwords do not match.");
-      return;
-    }
-
-    localStorage.removeItem("user");
-    setActiveComponent("login");
-    setShowLogoutConfirm(false);
-    setLogoutPasswords({ password: "", confirmPassword: "" });
   };
 
   const confirmDeleteAccount = () => {
@@ -283,63 +257,43 @@ const Profile = ({ setActiveComponent }) => {
         </button>
       </div>
 
-      {/* Modals here unchanged */}
+      {/* Logout Modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+          <div className="bg-white rounded-xl shadow-lg p-4 w-full max-w-md">
             <h3 className="text-2xl font-semibold mb-6 text-center text-red-600">
               Confirm Logout
             </h3>
 
-            <p className="mb-4 text-center">
-              Please enter your password twice to confirm logout.
+            <p className="mb-6 text-center text-gray-800">
+              Are you sure you want to logout your{" "}
+              <span className="font-semibold">{userData.role}</span> account?
             </p>
-
-            <div className="flex flex-col gap-4 mb-4">
-              <input
-                type="password"
-                name="password"
-                placeholder="Password"
-                value={logoutPasswords.password}
-                onChange={handleLogoutPasswordChange}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400"
-              />
-              <input
-                type="password"
-                name="confirmPassword"
-                placeholder="Confirm Password"
-                value={logoutPasswords.confirmPassword}
-                onChange={handleLogoutPasswordChange}
-                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400"
-              />
-            </div>
-
-            {logoutError && (
-              <p className="text-red-600 text-center mb-4 font-semibold">{logoutError}</p>
-            )}
 
             <div className="flex justify-end space-x-4">
               <button
-                onClick={() => {
-                  setShowLogoutConfirm(false);
-                  setLogoutPasswords({ password: "", confirmPassword: "" });
-                  setLogoutError("");
-                }}
+                onClick={() => setShowLogoutConfirm(false)}
                 className="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
               >
                 Cancel
               </button>
               <button
-                onClick={confirmLogout}
+                onClick={() => {
+                  localStorage.removeItem("user");
+                  setActiveComponent("login");
+                  setShowLogoutConfirm(false);
+                  window.location.reload(); // <-- Full page reload on logout
+                }}
                 className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
               >
-                Confirm Logout
+                Confirm
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Delete Account Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
           <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
@@ -399,6 +353,7 @@ const Profile = ({ setActiveComponent }) => {
         </div>
       )}
 
+      {/* Change Password Modal */}
       {showChangePassword && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
           <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
@@ -457,6 +412,7 @@ const Profile = ({ setActiveComponent }) => {
         </div>
       )}
 
+      {/* Success Popup */}
       {showSuccessPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
           <div className="bg-orange-500 text-white px-8 py-4 rounded-xl shadow-lg font-semibold text-center animate-pulse max-w-xs mx-auto">
@@ -469,5 +425,7 @@ const Profile = ({ setActiveComponent }) => {
 };
 
 export default Profile;
+
+
 
 

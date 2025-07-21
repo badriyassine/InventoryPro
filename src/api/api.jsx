@@ -59,6 +59,7 @@ export const addSale = (product_id, quantity, price, notes = "") =>
 export const deleteSale = (id) => apiFetch("sales/delete.php", "POST", { id });
 
 // USER (Profile)
+export const getUserProfile = () => apiFetch("user/get.php", "POST"); // Fetch user data including role
 export const updateUserProfile = (id, username, email) =>
   apiFetch("user/update.php", "POST", { id, name: username, email });
 export const changeUserPassword = (id, old_password, new_password) =>
@@ -83,3 +84,4 @@ export const resetPassword = (email, code, password) =>
 export const getDashboardStats = () => apiFetch("dashboard/stats.php", "POST");
 
 export { apiFetch };
+
