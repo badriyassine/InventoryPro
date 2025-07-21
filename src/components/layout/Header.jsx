@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { BiHome, BiPhone, BiInfoCircle, BiMap, BiBell } from "react-icons/bi";
 import { User as LucideUser } from "lucide-react";
-import { apiFetch } from "../../api/api"; // Adjust path if needed
+import {
+  apiFetch,
+  markNotificationsAsSeen as markNotificationsAsSeenAPI,
+} from "../../api/api";
 
 const Header = ({ setActiveComponent, activeComponent }) => {
   const [user, setUser] = useState(null);
@@ -9,33 +12,66 @@ const Header = ({ setActiveComponent, activeComponent }) => {
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [error, setError] = useState(null);
+  const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
   const notificationsRef = useRef(null);
 
+  // Load user once on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     setUser(storedUser ? JSON.parse(storedUser) : null);
-  }, [activeComponent]);
+  }, []);
 
+  // Fetch notifications every 10 seconds if user logged in
   useEffect(() => {
-    if (user && showNotifications) {
-      fetchNotifications();
-    }
-  }, [user, showNotifications]);
+    if (!user) return;
 
-  const fetchNotifications = async () => {
-    setLoadingNotifications(true);
-    setError(null);
-    try {
-      const data = await apiFetch("notifications/get.php", "POST");
-      setNotifications(data);
-    } catch (err) {
-      setError("Failed to load notifications.");
-    } finally {
-      setLoadingNotifications(false);
-    }
-  };
+    const fetchNotifications = async () => {
+      setLoadingNotifications(true);
+      setError(null);
+      try {
+        const data = await apiFetch("notifications/get.php", "POST");
+        setNotifications(data);
 
+        // Check if there are unseen notifications from server
+        const unseenExists = data.some((n) => !n.isSeen);
+        if (unseenExists) {
+          setHasNewNotifications(true);
+        }
+      } catch (err) {
+        setError("Failed to load notifications.");
+      } finally {
+        setLoadingNotifications(false);
+      }
+    };
+
+    fetchNotifications();
+
+    const interval = setInterval(fetchNotifications, 10000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  // Mark notifications as seen when dropdown opens and there are new notifications
+  useEffect(() => {
+    if (showNotifications && hasNewNotifications) {
+      const markAsSeen = async () => {
+        try {
+          const response = await markNotificationsAsSeenAPI();
+          if (response.success) {
+            setNotifications((prev) =>
+              prev.map((n) => ({ ...n, isSeen: true }))
+            );
+            setHasNewNotifications(false);
+          }
+        } catch (err) {
+          console.error("Failed to mark notifications as seen:", err);
+        }
+      };
+      markAsSeen();
+    }
+  }, [showNotifications, hasNewNotifications]);
+
+  // Close notifications dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -57,7 +93,19 @@ const Header = ({ setActiveComponent, activeComponent }) => {
     };
   }, [showNotifications]);
 
-  const clearNotifications = () => setNotifications([]);
+  const clearNotifications = async () => {
+    try {
+      const response = await apiFetch("notifications/delete.php", "POST");
+      if (response.success) {
+        setNotifications([]);
+        setHasNewNotifications(false);
+      } else {
+        console.error(response.message);
+      }
+    } catch (err) {
+      console.error("Failed to delete notifications", err);
+    }
+  };
 
   const handleNotificationClick = (targetComponent) => {
     if (targetComponent) {
@@ -102,7 +150,7 @@ const Header = ({ setActiveComponent, activeComponent }) => {
         </nav>
 
         {/* Right Side: Notification Icon & User Icon */}
-        <div className="flex items-center gap-3 relative">
+        <div className="flex items-center gap-4 relative">
           {user ? (
             <>
               {/* Notification Icon & Dropdown */}
@@ -113,7 +161,8 @@ const Header = ({ setActiveComponent, activeComponent }) => {
                   aria-label="Notifications"
                 >
                   <BiBell className="w-5 h-5" />
-                  {notifications.length > 0 && (
+                  {/* Show dot only if hasNewNotifications is true */}
+                  {hasNewNotifications && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
                   )}
                 </button>
@@ -127,7 +176,9 @@ const Header = ({ setActiveComponent, activeComponent }) => {
                       Notifications
                     </div>
                     {loadingNotifications ? (
-                      <p className="p-4 text-center text-gray-600">Loading...</p>
+                      <p className="p-4 text-center text-gray-600">
+                        Loading...
+                      </p>
                     ) : error ? (
                       <p className="p-4 text-center text-red-600">{error}</p>
                     ) : notifications.length === 0 ? (
@@ -146,7 +197,9 @@ const Header = ({ setActiveComponent, activeComponent }) => {
                               }
                             >
                               <p className="text-gray-800">{message}</p>
-                              <p className="text-xs text-gray-500 mt-1">{date}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {date}
+                              </p>
                             </li>
                           )
                         )}
@@ -196,6 +249,3 @@ const Header = ({ setActiveComponent, activeComponent }) => {
 };
 
 export default Header;
-
-
-

@@ -144,6 +144,12 @@ export const resetPassword = (email, code, password) =>
 export const getNotifications = () => apiFetch("notifications/get.php", "GET");
 export const addNotification = (message, targetComponent = null) =>
   apiFetch("notifications/add.php", "POST", { message, targetComponent });
+export const deleteNotifications = () =>
+  apiFetch("notifications/delete.php", "POST");
+export const markNotificationsAsSeen = () =>
+  apiFetch("notifications/mark_seen.php", "POST");
+
+
 
 
 // DASHBOARD
