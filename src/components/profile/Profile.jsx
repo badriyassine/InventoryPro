@@ -32,7 +32,11 @@ const Profile = ({ setActiveComponent }) => {
   });
   const [deleteError, setDeleteError] = useState("");
 
+  // Clock state
+  const [time, setTime] = useState(new Date());
+
   useEffect(() => {
+    // Load user from localStorage
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
@@ -46,6 +50,25 @@ const Profile = ({ setActiveComponent }) => {
       setEditedData({ username, email: parsedUser.email });
     }
   }, []);
+
+  useEffect(() => {
+    // Update time every second
+    const intervalId = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour12: false });
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString(undefined, {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   const handleDeletePasswordChange = (e) => {
     setDeletePasswords({ ...deletePasswords, [e.target.name]: e.target.value });
@@ -63,6 +86,8 @@ const Profile = ({ setActiveComponent }) => {
       setDeleteError("Passwords do not match.");
       return;
     }
+
+    // You should call backend here to delete user account securely before removing locally
 
     localStorage.removeItem("user");
     setActiveComponent("signup");
@@ -162,8 +187,8 @@ const Profile = ({ setActiveComponent }) => {
     <>
       <div className="max-w-6xl mx-auto mt-24 p-12 bg-white bg-opacity-30 mb-5 backdrop-blur-xl rounded-3xl shadow-2xl text-gray-800 min-h-[600px] flex flex-col justify-between">
         {/* Profile card content */}
-        <div>
-          <div className="flex items-center space-x-10 mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-10">
+          <div className="flex items-center space-x-8">
             <img
               className="w-36 h-36 rounded-full shadow-lg border-4 border-orange-300"
               src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -173,71 +198,92 @@ const Profile = ({ setActiveComponent }) => {
             />
             <div>
               <h2 className="text-4xl font-bold flex items-center gap-4">
-                {userData.username}
-                <span className="px-3 py-1 text-sm font-semibold text-white bg-orange-500 rounded-full">
+                <span className="text-orange-600 font-extrabold tracking-wide drop-shadow-md">
+                  {userData.username}
+                </span>
+                <span
+                  className={`px-3 py-1 text-sm font-semibold rounded-full text-white ${
+                    userData.role.toLowerCase() === "admin"
+                      ? "bg-green-600"
+                      : "bg-orange-500"
+                  }`}
+                >
                   {userData.role}
                 </span>
               </h2>
               <p className="text-lg text-gray-700 mt-2">{userData.email}</p>
-              <p className="text-lg text-gray-700 mt-1">User Profile</p>
+              <p className="text-lg text-gray-700 mt-1">Welcome to your profile</p>
             </div>
           </div>
 
-          <div className="max-w-lg">
-            {"username email".split(" ").map((field) => (
-              <div key={field} className="mb-6">
-                <label className="block text-sm font-semibold text-gray-600 capitalize mb-1">
-                  {field.charAt(0).toUpperCase() + field.slice(1)}:
-                </label>
-                {editing ? (
-                  <input
-                    type={field === "email" ? "email" : "text"}
-                    name={field}
-                    value={editedData[field]}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-lg"
-                  />
-                ) : (
-                  <p className="text-lg text-gray-900">{userData[field] || "N/A"}</p>
-                )}
-              </div>
-            ))}
+          {/* Clock on right side */}
+          <div className="text-center text-gray-800 select-none">
+            <div className="text-7xl font-mono font-extrabold tracking-widest text-orange-600 drop-shadow-lg">
+              {formatTime(time)}
+            </div>
+            <div className="mt-2 text-xl font-semibold text-gray-700">
+              {formatDate(time)}
+            </div>
+            <div className="mt-4 italic text-lg text-gray-600">
+              Time is important.
+            </div>
           </div>
+        </div>
 
-          <div className="flex justify-start mt-12 max-w-lg space-x-4">
-            <div>
+        <div className="max-w-lg w-full mt-12">
+          {"username email".split(" ").map((field) => (
+            <div key={field} className="mb-6">
+              <label className="block text-sm font-semibold text-gray-600 capitalize mb-1">
+                {field.charAt(0).toUpperCase() + field.slice(1)}:
+              </label>
               {editing ? (
-                <>
-                  <button
-                    onClick={handleSave}
-                    className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition mr-4"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    className="px-6 py-3 bg-gray-300 text-gray-800 text-lg font-medium rounded-lg hover:bg-gray-400 transition"
-                  >
-                    Cancel
-                  </button>
-                </>
+                <input
+                  type={field === "email" ? "email" : "text"}
+                  name={field}
+                  value={editedData[field]}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-lg"
+                />
               ) : (
-                <button
-                  onClick={() => setEditing(true)}
-                  className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition"
-                >
-                  Modify
-                </button>
+                <p className="text-lg text-gray-900">{userData[field] || "N/A"}</p>
               )}
             </div>
+          ))}
+        </div>
 
-            <button
-              onClick={() => setShowChangePassword(true)}
-              className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition"
-            >
-              Change Password
-            </button>
+        <div className="flex justify-start mt-12 max-w-lg space-x-4">
+          <div>
+            {editing ? (
+              <>
+                <button
+                  onClick={handleSave}
+                  className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition mr-4"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="px-6 py-3 bg-gray-300 text-gray-800 text-lg font-medium rounded-lg hover:bg-gray-400 transition"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => setEditing(true)}
+                className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition"
+              >
+                Modify
+              </button>
+            )}
           </div>
+
+          <button
+            onClick={() => setShowChangePassword(true)}
+            className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition"
+          >
+            Change Password
+          </button>
         </div>
       </div>
 
@@ -280,9 +326,9 @@ const Profile = ({ setActiveComponent }) => {
               <button
                 onClick={() => {
                   localStorage.removeItem("user");
-                  setActiveComponent("login");
+                  window.location.reload(); // Reload page on logout
+                  // Optionally, also setActiveComponent("login");
                   setShowLogoutConfirm(false);
-                  window.location.reload(); // <-- Full page reload on logout
                 }}
                 className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
               >
@@ -425,6 +471,8 @@ const Profile = ({ setActiveComponent }) => {
 };
 
 export default Profile;
+
+
 
 
 
