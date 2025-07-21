@@ -19,7 +19,22 @@ const Profile = ({ setActiveComponent }) => {
   const [changePasswordMessage, setChangePasswordMessage] = useState("");
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
-  // Load user data on mount
+  // Logout confirmation modal state
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [logoutPasswords, setLogoutPasswords] = useState({
+    password: "",
+    confirmPassword: "",
+  });
+  const [logoutError, setLogoutError] = useState("");
+
+  // Delete account confirmation modal state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePasswords, setDeletePasswords] = useState({
+    password: "",
+    confirmPassword: "",
+  });
+  const [deleteError, setDeleteError] = useState("");
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -34,12 +49,55 @@ const Profile = ({ setActiveComponent }) => {
     }
   }, []);
 
-  // Handle profile input changes
+  const handleLogoutPasswordChange = (e) => {
+    setLogoutPasswords({ ...logoutPasswords, [e.target.name]: e.target.value });
+  };
+  const handleDeletePasswordChange = (e) => {
+    setDeletePasswords({ ...deletePasswords, [e.target.name]: e.target.value });
+  };
+
+  const confirmLogout = () => {
+    setLogoutError("");
+    const { password, confirmPassword } = logoutPasswords;
+
+    if (!password || !confirmPassword) {
+      setLogoutError("Please fill in both password fields.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setLogoutError("Passwords do not match.");
+      return;
+    }
+
+    localStorage.removeItem("user");
+    setActiveComponent("login");
+    setShowLogoutConfirm(false);
+    setLogoutPasswords({ password: "", confirmPassword: "" });
+  };
+
+  const confirmDeleteAccount = () => {
+    setDeleteError("");
+    const { password, confirmPassword } = deletePasswords;
+
+    if (!password || !confirmPassword) {
+      setDeleteError("Please fill in both password fields.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setDeleteError("Passwords do not match.");
+      return;
+    }
+
+    localStorage.removeItem("user");
+    setActiveComponent("signup");
+    setShowDeleteConfirm(false);
+    setDeletePasswords({ password: "", confirmPassword: "" });
+  };
+
   const handleChange = (e) => {
     setEditedData({ ...editedData, [e.target.name]: e.target.value });
   };
 
-  // Save edited profile (only localStorage, can extend to backend)
   const handleSave = () => {
     setUserData(editedData);
     localStorage.setItem(
@@ -54,12 +112,10 @@ const Profile = ({ setActiveComponent }) => {
     setEditing(false);
   };
 
-  // Handle change password inputs
   const handlePasswordInputChange = (e) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
-  // Call backend API to change password using api function
   const handleChangePassword = async () => {
     setChangePasswordMessage("");
 
@@ -104,7 +160,6 @@ const Profile = ({ setActiveComponent }) => {
     }
   };
 
-  // If not logged in
   if (!localStorage.getItem("user")) {
     return (
       <div className="max-w-md mx-auto mt-32 p-8 bg-white bg-opacity-30 backdrop-blur-xl rounded-xl shadow-2xl text-gray-800 text-center">
@@ -127,86 +182,216 @@ const Profile = ({ setActiveComponent }) => {
     );
   }
 
-  // Logged in profile UI
   return (
-    <div className="max-w-6xl mx-auto mt-24 p-12 bg-white bg-opacity-30 mb-36 backdrop-blur-xl rounded-3xl shadow-2xl text-gray-800">
-      {/* Avatar + Username + Email */}
-      <div className="flex items-center space-x-10 mb-12">
-        <img
-          className="w-36 h-36 rounded-full shadow-lg border-4 border-orange-300"
-          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-            userData.username
-          )}&background=FFEDD5&color=EA580C&size=256`}
-          alt="User Avatar"
-        />
+    <>
+      <div className="max-w-6xl mx-auto mt-24 p-12 bg-white bg-opacity-30 mb-5 backdrop-blur-xl rounded-3xl shadow-2xl text-gray-800 min-h-[600px] flex flex-col justify-between">
+        {/* Profile card content */}
         <div>
-          <h2 className="text-4xl font-bold">{userData.username}</h2>
-          <p className="text-lg text-gray-700 mt-2">{userData.email}</p>
-          <p className="text-lg text-gray-700 mt-1">User Profile</p>
-        </div>
-      </div>
-
-      {/* Editable User Info */}
-      <div className="max-w-lg">
-        {["username", "email"].map((field) => (
-          <div key={field} className="mb-6">
-            <label className="block text-sm font-semibold text-gray-600 capitalize mb-1">
-              {field.charAt(0).toUpperCase() + field.slice(1)}:
-            </label>
-            {editing ? (
-              <input
-                type={field === "email" ? "email" : "text"}
-                name={field}
-                value={editedData[field]}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-lg"
-              />
-            ) : (
-              <p className="text-lg text-gray-900">
-                {userData[field] || "N/A"}
-              </p>
-            )}
+          <div className="flex items-center space-x-10 mb-12">
+            <img
+              className="w-36 h-36 rounded-full shadow-lg border-4 border-orange-300"
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                userData.username
+              )}&background=FFEDD5&color=EA580C&size=256`}
+              alt="User Avatar"
+            />
+            <div>
+              <h2 className="text-4xl font-bold">{userData.username}</h2>
+              <p className="text-lg text-gray-700 mt-2">{userData.email}</p>
+              <p className="text-lg text-gray-700 mt-1">User Profile</p>
+            </div>
           </div>
-        ))}
-      </div>
 
-      {/* Buttons: Modify and Change Password */}
-      <div className="flex justify-start mt-12 max-w-lg space-x-4">
-        <div>
-          {editing ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition mr-4"
-              >
-                Save
-              </button>
-              <button
-                onClick={handleCancel}
-                className="px-6 py-3 bg-gray-300 text-gray-800 text-lg font-medium rounded-lg hover:bg-gray-400 transition"
-              >
-                Cancel
-              </button>
-            </>
-          ) : (
+          <div className="max-w-lg">
+            {"username email".split(" ").map((field) => (
+              <div key={field} className="mb-6">
+                <label className="block text-sm font-semibold text-gray-600 capitalize mb-1">
+                  {field.charAt(0).toUpperCase() + field.slice(1)}:
+                </label>
+                {editing ? (
+                  <input
+                    type={field === "email" ? "email" : "text"}
+                    name={field}
+                    value={editedData[field]}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-lg"
+                  />
+                ) : (
+                  <p className="text-lg text-gray-900">{userData[field] || "N/A"}</p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-start mt-12 max-w-lg space-x-4">
+            <div>
+              {editing ? (
+                <>
+                  <button
+                    onClick={handleSave}
+                    className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition mr-4"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancel}
+                    className="px-6 py-3 bg-gray-300 text-gray-800 text-lg font-medium rounded-lg hover:bg-gray-400 transition"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition"
+                >
+                  Modify
+                </button>
+              )}
+            </div>
+
             <button
-              onClick={() => setEditing(true)}
+              onClick={() => setShowChangePassword(true)}
               className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition"
             >
-              Modify
+              Change Password
             </button>
-          )}
+          </div>
         </div>
+      </div>
 
+      {/* Buttons below the profile card aligned right */}
+      <div className="max-w-6xl mx-auto pl-10 flex justify-end space-x-4 mb-36 ">
         <button
-          onClick={() => setShowChangePassword(true)}
-          className="px-6 py-3 bg-orange-500 text-white text-lg font-medium rounded-lg hover:bg-orange-600 transition"
+          onClick={() => setShowLogoutConfirm(true)}
+          className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold"
         >
-          Change Password
+          Logout
+        </button>
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition font-semibold"
+        >
+          Delete Account
         </button>
       </div>
 
-      {/* Change Password Modal */}
+      {/* Modals here unchanged */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+            <h3 className="text-2xl font-semibold mb-6 text-center text-red-600">
+              Confirm Logout
+            </h3>
+
+            <p className="mb-4 text-center">
+              Please enter your password twice to confirm logout.
+            </p>
+
+            <div className="flex flex-col gap-4 mb-4">
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={logoutPasswords.password}
+                onChange={handleLogoutPasswordChange}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={logoutPasswords.confirmPassword}
+                onChange={handleLogoutPasswordChange}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+            </div>
+
+            {logoutError && (
+              <p className="text-red-600 text-center mb-4 font-semibold">{logoutError}</p>
+            )}
+
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  setLogoutPasswords({ password: "", confirmPassword: "" });
+                  setLogoutError("");
+                }}
+                className="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+              >
+                Confirm Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
+            <h3 className="text-2xl font-semibold mb-6 text-center text-gray-800">
+              Confirm Delete Account
+            </h3>
+
+            <p className="mb-4 text-center text-red-600 font-semibold">
+              WARNING: This action is irreversible!
+            </p>
+            <p className="mb-4 text-center">
+              Please enter your password twice to confirm account deletion.
+            </p>
+
+            <div className="flex flex-col gap-4 mb-4">
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={deletePasswords.password}
+                onChange={handleDeletePasswordChange}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800"
+              />
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={deletePasswords.confirmPassword}
+                onChange={handleDeletePasswordChange}
+                className="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-800"
+              />
+            </div>
+
+            {deleteError && (
+              <p className="text-red-600 text-center mb-4 font-semibold">{deleteError}</p>
+            )}
+
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeletePasswords({ password: "", confirmPassword: "" });
+                  setDeleteError("");
+                }}
+                className="px-6 py-3 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteAccount}
+                className="px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition"
+              >
+                Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showChangePassword && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
           <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
@@ -265,7 +450,6 @@ const Profile = ({ setActiveComponent }) => {
         </div>
       )}
 
-      {/* Success Popup */}
       {showSuccessPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
           <div className="bg-orange-500 text-white px-8 py-4 rounded-xl shadow-lg font-semibold text-center animate-pulse max-w-xs mx-auto">
@@ -273,8 +457,9 @@ const Profile = ({ setActiveComponent }) => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
 export default Profile;
+
