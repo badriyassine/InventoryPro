@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   changeUserPassword,
   deleteUserAccount,
+  updateUserProfile,
 } from "../../api/api"; // Adjust import path as needed
 import { User as LucideUser } from "lucide-react";
 
@@ -26,7 +27,6 @@ const Profile = ({ setActiveComponent }) => {
 
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  // Delete account modal state and errors
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePasswords, setDeletePasswords] = useState({
     password: "",
@@ -35,11 +35,9 @@ const Profile = ({ setActiveComponent }) => {
   const [deleteError, setDeleteError] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Clock state
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
-    // Load user from localStorage
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
@@ -55,13 +53,11 @@ const Profile = ({ setActiveComponent }) => {
   }, []);
 
   useEffect(() => {
-    // Update time every second
     const intervalId = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(intervalId);
   }, []);
 
-  const formatTime = (date) =>
-    date.toLocaleTimeString([], { hour12: false });
+  const formatTime = (date) => date.toLocaleTimeString([], { hour12: false });
 
   const formatDate = (date) =>
     date.toLocaleDateString(undefined, {
@@ -71,16 +67,14 @@ const Profile = ({ setActiveComponent }) => {
       day: "numeric",
     });
 
-  // Handle delete password inputs
   const handleDeletePasswordChange = (e) => {
     setDeletePasswords({ ...deletePasswords, [e.target.name]: e.target.value });
   };
 
-  // Confirm Delete Account - Updated with better error handling
   const confirmDeleteAccount = async () => {
     setDeleteError("");
     setIsDeleting(true);
-    
+
     const { password, confirmPassword } = deletePasswords;
 
     if (!password || !confirmPassword) {
@@ -95,12 +89,9 @@ const Profile = ({ setActiveComponent }) => {
     }
 
     try {
-      console.log("Attempting to delete account...");
       const result = await deleteUserAccount(password);
-      console.log("Delete result:", result);
 
       if (result.success) {
-        // Clear user data and redirect
         localStorage.removeItem("user");
         setActiveComponent("signup");
         setShowDeleteConfirm(false);
@@ -110,25 +101,21 @@ const Profile = ({ setActiveComponent }) => {
         setDeleteError(result.message || "Failed to delete account.");
       }
     } catch (err) {
-      console.error("Delete account error:", err);
-      setDeleteError(err.message || "Server error. Please check console for details.");
+      setDeleteError(
+        err.message || "Server error. Please check console for details."
+      );
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // Handle profile editing inputs
+  // Profile editing inputs handler
   const handleChange = (e) => {
-    setEditedData({ ...editedData, [e.target.name]: e.target.value });
-  };
-
-  const handleSave = () => {
-    setUserData(editedData);
-    localStorage.setItem(
-      "user",
-      JSON.stringify({ ...editedData, id: userData.id, role: userData.role })
-    );
-    setEditing(false);
+    const { name, value } = e.target;
+    setEditedData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleCancel = () => {
@@ -136,12 +123,46 @@ const Profile = ({ setActiveComponent }) => {
     setEditing(false);
   };
 
-  // Change password inputs
+  // **Updated handleSave: send username and email**
+  const handleSave = async () => {
+    try {
+      const response = await updateUserProfile(
+        userData.id,
+        editedData.username,
+        editedData.email
+      );
+
+      if (response.success) {
+        // Update userData and localStorage with new profile info
+        setUserData((prev) => ({
+          ...prev,
+          username: editedData.username,
+          email: editedData.email,
+        }));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...editedData,
+            id: userData.id,
+            role: userData.role,
+          })
+        );
+        setEditing(false);
+      } else {
+        alert(response.message || "Failed to update profile.");
+      }
+    } catch (err) {
+      alert("Server error: Could not update profile.");
+      console.error(err);
+    }
+  };
+
+  // Password input change handler
   const handlePasswordInputChange = (e) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
-  // Change password submit
+  // Change password submit handler
   const handleChangePassword = async () => {
     setChangePasswordMessage("");
 
@@ -186,7 +207,6 @@ const Profile = ({ setActiveComponent }) => {
     }
   };
 
-  // If not logged in, show login/signup options
   if (!localStorage.getItem("user")) {
     return (
       <div className="max-w-md mx-auto mt-32 p-8 bg-white bg-opacity-30 backdrop-blur-xl rounded-xl shadow-2xl text-gray-800 text-center">
@@ -238,7 +258,9 @@ const Profile = ({ setActiveComponent }) => {
                 </span>
               </h2>
               <p className="text-lg text-gray-700 mt-2">{userData.email}</p>
-              <p className="text-lg text-gray-700 mt-1">Welcome to your profile</p>
+              <p className="text-lg text-gray-700 mt-1">
+                Welcome to your profile
+              </p>
             </div>
           </div>
 
@@ -271,7 +293,9 @@ const Profile = ({ setActiveComponent }) => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 text-lg"
                 />
               ) : (
-                <p className="text-lg text-gray-900">{userData[field] || "N/A"}</p>
+                <p className="text-lg text-gray-900">
+                  {userData[field] || "N/A"}
+                </p>
               )}
             </div>
           ))}
@@ -364,7 +388,7 @@ const Profile = ({ setActiveComponent }) => {
         </div>
       )}
 
-      {/* Delete Account Modal - Updated */}
+      {/* Delete Account Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
           <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
@@ -502,11 +526,4 @@ const Profile = ({ setActiveComponent }) => {
 };
 
 export default Profile;
-
-
-
-
-
-
-
 

@@ -76,14 +76,14 @@ export const deleteSale = (id) => apiFetch("sales/delete.php", "POST", { id });
 // USER (Profile)
 export const getUserProfile = () => apiFetch("user/get.php", "GET");
 export const updateUserProfile = (id, username, email) =>
-  apiFetch("user/update.php", "POST", { id, name: username, email });
+  apiFetch("user/update.php", "POST", { id, username, email });
 export const changeUserPassword = (id, old_password, new_password) =>
   apiFetch("user/change_password.php", "POST", {
     id,
     old_password,
     new_password,
   });
-  
+
 export const deleteUserByAdmin = (id) =>
   apiFetch("user/delete_by_admin.php", "POST", { id });
 
