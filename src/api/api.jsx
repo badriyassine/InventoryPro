@@ -83,6 +83,13 @@ export const changeUserPassword = (id, old_password, new_password) =>
     old_password,
     new_password,
   });
+  
+export const deleteUserByAdmin = (id) =>
+  apiFetch("user/delete_by_admin.php", "POST", { id });
+
+export const deleteUser = (userId) =>
+  apiFetch("user/delete_user.php", "POST", { id: userId });
+export const getAllUsers = () => apiFetch("user/get_all.php", "GET");
 
 // Fixed delete account function - only sends password
 export const deleteUserAccount = async (password) => {
@@ -148,9 +155,6 @@ export const deleteNotifications = () =>
   apiFetch("notifications/delete.php", "POST");
 export const markNotificationsAsSeen = () =>
   apiFetch("notifications/mark_seen.php", "POST");
-
-
-
 
 // DASHBOARD
 export const getDashboardStats = () => apiFetch("dashboard/stats.php", "GET");
