@@ -22,6 +22,9 @@ const Login = ({ onLogin, onForgot, onSignup }) => {
         localStorage.setItem("user", JSON.stringify(response.user));
         setMessage("Login successful!");
         onLogin && onLogin(response.user);
+
+        // Auto refresh the page after login
+        window.location.reload();
       } else {
         setMessage(response.message || "Login failed");
       }
@@ -128,3 +131,4 @@ const Login = ({ onLogin, onForgot, onSignup }) => {
 };
 
 export default Login;
+

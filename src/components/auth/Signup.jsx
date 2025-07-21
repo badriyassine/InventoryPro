@@ -43,17 +43,19 @@ function Signup({ onSignup, onLoginClick }) {
 
       if (response && response.success) {
         setMessage("Signup successful!");
-        // Only call onSignup if we have valid user data
+        // Trigger onSignup callback with user data
         if (onSignup && (response.user || form.username)) {
           onSignup({
             username: response.user?.username || form.username,
             email: response.user?.email || form.email,
-            // Include any other user data from response
             ...response.user,
           });
         }
+
+        // Auto refresh the page after signup
+        window.location.reload();
       } else {
-        // Handle different error cases
+        // Handle error response
         setMessage(response?.message || "Signup failed. Please try again.");
       }
     } catch (err) {
@@ -183,3 +185,4 @@ function Signup({ onSignup, onLoginClick }) {
 }
 
 export default Signup;
+

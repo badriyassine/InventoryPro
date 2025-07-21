@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Package, TrendingUp, Layers, Users, Trash2, X } from "lucide-react";
+import { Package, TrendingUp, Layers, Users, Trash2 } from "lucide-react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -129,7 +129,24 @@ const Dashboard = () => {
           value={`$${stats.total_sales_amount.toFixed(2)}`}
         />
         {user.role === "admin" && (
-          <StatCard icon={<Users />} title="Total Users" value={users.length} />
+          <>
+            <StatCard icon={<Users />} title="Total Users" value={users.length} />
+            <StatCard
+              icon={<Package />}
+              title="All Users' Products"
+              value={users.reduce((acc, u) => acc + (u.total_products || 0), 0)}
+            />
+            <StatCard
+              icon={<Layers />}
+              title="All Users' Stock"
+              value={users.reduce((acc, u) => acc + (u.total_stock_entries || 0), 0)}
+            />
+            <StatCard
+              icon={<TrendingUp />}
+              title="All Users' Sales"
+              value={users.reduce((acc, u) => acc + (u.total_sales || 0), 0)}
+            />
+          </>
         )}
       </div>
 
@@ -241,3 +258,4 @@ const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
 );
 
 export default Dashboard;
+
