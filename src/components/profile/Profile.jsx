@@ -6,6 +6,7 @@ const Profile = ({ setActiveComponent }) => {
     username: "",
     email: "",
     id: null,
+    role: "",  // Added role here
   });
   const [editing, setEditing] = useState(false);
   const [editedData, setEditedData] = useState({ username: "", email: "" });
@@ -44,6 +45,7 @@ const Profile = ({ setActiveComponent }) => {
         username,
         email: parsedUser.email,
         id: parsedUser.id || parsedUser.user_id || null,
+        role: parsedUser.role || "User", // default role fallback
       });
       setEditedData({ username, email: parsedUser.email });
     }
@@ -102,7 +104,7 @@ const Profile = ({ setActiveComponent }) => {
     setUserData(editedData);
     localStorage.setItem(
       "user",
-      JSON.stringify({ ...editedData, id: userData.id })
+      JSON.stringify({ ...editedData, id: userData.id, role: userData.role })
     );
     setEditing(false);
   };
@@ -196,7 +198,12 @@ const Profile = ({ setActiveComponent }) => {
               alt="User Avatar"
             />
             <div>
-              <h2 className="text-4xl font-bold">{userData.username}</h2>
+              <h2 className="text-4xl font-bold flex items-center gap-4">
+                {userData.username}
+                <span className="px-3 py-1 text-sm font-semibold text-white bg-orange-500 rounded-full">
+                  {userData.role}
+                </span>
+              </h2>
               <p className="text-lg text-gray-700 mt-2">{userData.email}</p>
               <p className="text-lg text-gray-700 mt-1">User Profile</p>
             </div>
@@ -462,4 +469,5 @@ const Profile = ({ setActiveComponent }) => {
 };
 
 export default Profile;
+
 
