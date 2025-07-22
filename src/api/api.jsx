@@ -146,16 +146,17 @@ export const uploadAvatar = async (avatarFile) => {
     method: "POST",
     credentials: "include",
     body: formData,
-    // DO NOT set Content-Type — browser sets it automatically for FormData
   });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(text || "Failed to upload avatar");
+  const text = await response.text();
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Upload Avatar: Invalid JSON response", text);
+    return { success: false, message: "Server error: not a valid JSON response." };
   }
-
-  return await response.json();
 };
+
 
 
 

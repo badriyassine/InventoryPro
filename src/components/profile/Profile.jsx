@@ -145,14 +145,15 @@ const Profile = ({ setActiveComponent }) => {
               <img
                 src={
                   userData.avatar_url
-                    ? `http://localhost/inventory_backend/uploads/${userData.avatar}`
+                    ? `http://localhost/inventory-backend${userData.avatar_url}`
                     : `https://ui-avatars.com/api/?name=${encodeURIComponent(
                         username || "User"
                       )}&background=FFEDD5&color=EA580C&size=256`
                 }
                 alt="Avatar"
-                className="w-40 h-40 rounded-md shadow-lg border-4 border-orange-300 object-cover"
+                className="w-40 h-40 rounded-full mt-2 shadow-lg border-4 border-orange-300 object-cover"
               />
+
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center rounded-md transition">
                 <svg
                   className="h-10 w-10 text-white opacity-0 group-hover:opacity-100 transition"
