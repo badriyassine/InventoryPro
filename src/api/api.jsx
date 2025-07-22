@@ -136,6 +136,30 @@ export const deleteUserAccount = async (password) => {
   }
 };
 
+
+// USER - Avatar Upload (uses FormData, not apiFetch)
+export const uploadAvatar = async (avatarFile) => {
+  const formData = new FormData();
+  formData.append("avatar", avatarFile);
+
+  const response = await fetch(`${BASE_URL}/user/uploadAvatar.php`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+    // DO NOT set Content-Type — browser sets it automatically for FormData
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || "Failed to upload avatar");
+  }
+
+  return await response.json();
+};
+
+
+
+
 // AUTH
 export const signup = (username, email, password) =>
   apiFetch("auth/signup.php", "POST", { username, email, password });
