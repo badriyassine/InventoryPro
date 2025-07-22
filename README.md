@@ -25,9 +25,15 @@ InventoryPro is a powerful web application to manage products, sales, and stock,
 
 ![Interface(Login)](./public/screenshots/2.png)
 
+![Admin Dashboard](./public/screenshots/7.png)
+
 ![Dashboard](./public/screenshots/4.png)
 
+![Signup](./public/screenshots/8.png)
+
 ![Login](./public/screenshots/3.png)
+
+![Notfications](./public/screenshots/6.png)
 
 ![Profile](./public/screenshots/5.png)
 
