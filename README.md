@@ -4,10 +4,15 @@ InventoryPro is a powerful web application to manage products, sales, and stock,
 
 ## 🚀 Features
 
-- Product Management
-- Sales and Stock Tracking
-- Real-Time Dashboard Charts
-- Responsive UI built with React + Vite
+- Product Management 
+- Sales and Stock Tracking 
+- Real-Time Dashboard Charts 
+- Responsive UI 
+- Role-Based Access 
+- Notification System 
+- Authentication System 
+- Avatar Upload 
+- Account Deletion 
 
 ## 🛠️ Tech Stack
 
