@@ -5,9 +5,11 @@ import {
   apiFetch,
   markNotificationsAsSeen as markNotificationsAsSeenAPI,
 } from "../../api/api";
+import { useAuth } from "../../context/AuthContext"; // import your auth hook
 
 const Header = ({ setActiveComponent, activeComponent }) => {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();  // <-- get user reactively from context
+
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
@@ -15,12 +17,6 @@ const Header = ({ setActiveComponent, activeComponent }) => {
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
   const notificationsRef = useRef(null);
-
-  // Load user once on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    setUser(storedUser ? JSON.parse(storedUser) : null);
-  }, []);
 
   // Fetch notifications every 10 seconds if user logged in
   useEffect(() => {
@@ -35,9 +31,7 @@ const Header = ({ setActiveComponent, activeComponent }) => {
 
         // Check if there are unseen notifications from server
         const unseenExists = data.some((n) => !n.isSeen);
-        if (unseenExists) {
-          setHasNewNotifications(true);
-        }
+        setHasNewNotifications(unseenExists);
       } catch (err) {
         setError("Failed to load notifications.");
       } finally {
@@ -176,15 +170,11 @@ const Header = ({ setActiveComponent, activeComponent }) => {
                       Notifications
                     </div>
                     {loadingNotifications ? (
-                      <p className="p-4 text-center text-gray-600">
-                        Loading...
-                      </p>
+                      <p className="p-4 text-center text-gray-600">Loading...</p>
                     ) : error ? (
                       <p className="p-4 text-center text-red-600">{error}</p>
                     ) : notifications.length === 0 ? (
-                      <p className="p-4 text-center text-gray-600">
-                        No notifications
-                      </p>
+                      <p className="p-4 text-center text-gray-600">No notifications</p>
                     ) : (
                       <ul>
                         {notifications.map(
@@ -192,14 +182,10 @@ const Header = ({ setActiveComponent, activeComponent }) => {
                             <li
                               key={id}
                               className="px-4 py-3 border-b border-orange-200 hover:bg-orange-50 cursor-pointer"
-                              onClick={() =>
-                                handleNotificationClick(targetComponent)
-                              }
+                              onClick={() => handleNotificationClick(targetComponent)}
                             >
                               <p className="text-gray-800">{message}</p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {date}
-                              </p>
+                              <p className="text-xs text-gray-500 mt-1">{date}</p>
                             </li>
                           )
                         )}
@@ -249,3 +235,4 @@ const Header = ({ setActiveComponent, activeComponent }) => {
 };
 
 export default Header;
+
