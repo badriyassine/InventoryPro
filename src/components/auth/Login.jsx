@@ -18,18 +18,13 @@ const Login = ({ onLogin, onForgot, onSignup }) => {
       console.log("Login response:", response);
 
       if (response.success) {
-        // Store user info only, no token (session-based auth)
         localStorage.setItem("user", JSON.stringify(response.user));
         setMessage("Login successful!");
-        onLogin && onLogin(response.user);
-
-        // Auto refresh the page after login
-        window.location.reload();
+        onLogin && onLogin(response.user); // Notify parent to show Nav etc.
       } else {
         setMessage(response.message || "Login failed");
       }
     } catch (error) {
-      // Show backend error message if available
       if (error.response && error.response.message) {
         setMessage(error.response.message);
       } else {
@@ -131,4 +126,3 @@ const Login = ({ onLogin, onForgot, onSignup }) => {
 };
 
 export default Login;
-

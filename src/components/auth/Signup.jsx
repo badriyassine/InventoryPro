@@ -21,7 +21,6 @@ function Signup({ onSignup, onLoginClick }) {
     e.preventDefault();
     setMessage("");
 
-    // Validate form inputs
     if (!usernamePattern.test(form.username)) {
       return setMessage(
         "Username must contain only letters, optionally numbers (after 3 letters), and underscores."
@@ -39,27 +38,24 @@ function Signup({ onSignup, onLoginClick }) {
     setLoading(true);
     try {
       const response = await signup(form.username, form.email, form.password);
-      console.log("Signup response:", response); // For debugging
+      console.log("Signup response:", response);
 
-      if (response && response.success) {
-        setMessage("Signup successful!");
-        // Trigger onSignup callback with user data
-        if (onSignup && (response.user || form.username)) {
-          onSignup({
-            username: response.user?.username || form.username,
-            email: response.user?.email || form.email,
-            ...response.user,
-          });
+      if (response && response.success && response.user) {
+        // Save user to localStorage
+        localStorage.setItem("user", JSON.stringify(response.user));
+
+        // Call onSignup to update Auth context and switch to home
+        if (onSignup) {
+          onSignup(response.user);
         }
 
-        // Auto refresh the page after signup
+        setMessage("Signup successful!");
         window.location.reload();
       } else {
-        // Handle error response
         setMessage(response?.message || "Signup failed. Please try again.");
       }
     } catch (err) {
-      console.error("Signup error:", err); // For debugging
+      console.error("Signup error:", err);
       setMessage(
         "Unable to connect to the server. Please check your connection and try again."
       );
@@ -185,4 +181,5 @@ function Signup({ onSignup, onLoginClick }) {
 }
 
 export default Signup;
+
 
