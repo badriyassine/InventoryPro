@@ -10,8 +10,20 @@ import {
   Legend,
   CartesianGrid,
 } from "recharts";
+import {
+  getDashboardStats,
+  getAllUsers,
+  deleteUserByAdmin,
+} from "../../api/api";
 
-import { getDashboardStats, getAllUsers, deleteUserByAdmin } from "../../api/api";
+// Utility to format large numbers
+const formatNumber = (num) => {
+  if (typeof num === "string") num = parseFloat(num.replace(/[^0-9.-]+/g, ""));
+  if (isNaN(num)) return "N/A";
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + "M";
+  if (num >= 1_000) return (num / 1_000).toFixed(1) + "k";
+  return num;
+};
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -130,7 +142,11 @@ const Dashboard = () => {
         />
         {user.role === "admin" && (
           <>
-            <StatCard icon={<Users />} title="Total Users" value={users.length} />
+            <StatCard
+              icon={<Users />}
+              title="Total Users"
+              value={users.length}
+            />
             <StatCard
               icon={<Package />}
               title="All Users' Products"
@@ -139,7 +155,10 @@ const Dashboard = () => {
             <StatCard
               icon={<Layers />}
               title="All Users' Stock"
-              value={users.reduce((acc, u) => acc + (u.total_stock_entries || 0), 0)}
+              value={users.reduce(
+                (acc, u) => acc + (u.total_stock_entries || 0),
+                0
+              )}
             />
             <StatCard
               icon={<TrendingUp />}
@@ -221,12 +240,17 @@ const Dashboard = () => {
   );
 };
 
+// 🟧 StatCard with formatted & truncated values
 const StatCard = ({ icon, title, value, subtitle, subtitleColor }) => (
-  <div className="bg-white/30 backdrop-blur-md p-6 rounded-2xl shadow-lg flex items-center gap-4 hover:scale-[1.05] hover:shadow-orange-400/60 cursor-pointer">
+  <div className="bg-white/30 backdrop-blur-md p-6 rounded-2xl shadow-lg flex items-center gap-4 hover:scale-[1.05] hover:shadow-orange-400/60 cursor-pointer max-w-full">
     <div className="text-orange-500 w-10 h-10">{icon}</div>
-    <div>
+    <div className="overflow-hidden text-ellipsis">
       <p className="text-sm text-gray-700">{title}</p>
-      <p className="text-2xl font-bold text-orange-600">{value}</p>
+      <p className="text-2xl font-bold text-orange-600 truncate max-w-[120px]">
+        {typeof value === "string" && value.startsWith("$")
+          ? "$" + formatNumber(value.slice(1))
+          : formatNumber(value)}
+      </p>
       {subtitle && (
         <p className={`text-sm font-semibold ${subtitleColor}`}>{subtitle}</p>
       )}
@@ -258,4 +282,3 @@ const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
 );
 
 export default Dashboard;
-
