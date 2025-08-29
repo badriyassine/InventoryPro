@@ -71,7 +71,7 @@ See [LICENSE](/LICENSE)
 
 ## 👤 Author
 
-Made by [**YASSINE**](https://github.com/badridev)
+Made by [**YASSINE**](https://github.com/badriyassine)
 
 ## 📞 Contact
 
