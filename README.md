@@ -1,4 +1,4 @@
-# 📈 InventoryPro Frontend ( Updated )
+# 📈 InventoryPro Frontend 
 
 InventoryPro is a powerful web application to manage products, sales, and stock, with a visual dashboard for tracking activity.
 
@@ -47,7 +47,7 @@ Watch it on [LinkedIn](https://www.linkedin.com/posts/yassine-badri-0279a7342_pr
 ### 1. Clone the Frontend
 
 ```bash
-git clone https://github.com/BD-YASSINE/InventoryPro.git
+git clone https://github.com/badridev/InventoryPro.git
 cd InventoryPro
 ```
 
@@ -71,7 +71,7 @@ See [LICENSE](/LICENSE)
 
 ## 👤 Author
 
-Made by [**ERROR**](https://github.com/BD-YASSINE)
+Made by [**YASSINE**](https://github.com/badriyassine)
 
 ## 📞 Contact
 
